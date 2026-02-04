@@ -182,7 +182,7 @@ useEffect(() => {
             className="flex items-center gap-1 text-3xl font-extrabold text-orange-500"
           >
             Institute Data
-            <span className="text-xl text-black ">{openDropdown ? "▲" : "▼"}</span>
+            <span className="text-xl ">{openDropdown ? "▲" : "▼"}</span>
           </button>
 
           {openDropdown && (
@@ -302,8 +302,9 @@ const InstituteStudentsTable = ({ rows, onDelete }) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="bg-[#f9c199] rounded-t-xl overflow-hidden border border-orange-300">
-      <div className="grid grid-cols-4 gap-4 px-4 py-3 text-black font-semibold text-sm">
+    <div className="overflow-x-auto bg-white rounded-lg shadow border border-orange-200">
+      <div className="grid grid-cols-4 gap-4 px-4 py-3 
+  bg-[#FFD9B3] text-black font-semibold text-sm rounded-t-sm">
         <div className="flex items-center gap-2">
           <span>Students Name</span>
         </div>
@@ -313,7 +314,18 @@ const InstituteStudentsTable = ({ rows, onDelete }) => {
       </div>
 
       <div className="bg-white text-black">
-        {localRows.map((row) => {
+
+  {localRows.length === 0 ? (
+    /* 🔹 EMPTY MESSAGE */
+    <div className="grid grid-cols-4 px-4 py-6 border-t border-orange-200">
+      <div className="col-span-4 text-center text-gray-500 font-medium text-sm">
+        No students assigned
+      </div>
+    </div>
+  ) : (
+
+    localRows.map((row) => {
+
           const isEditing = editingId === row.uid;
           const name = `${row.firstName || ""} ${row.lastName || ""}`.trim();
           return (
@@ -370,7 +382,9 @@ const InstituteStudentsTable = ({ rows, onDelete }) => {
 
             </div>
           );
-        })}
+})
+      )}
+
       </div>
     </div>
   );
@@ -427,8 +441,9 @@ const InstituteTrainersTable = ({ rows, onDelete }) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="bg-[#f9c199] rounded-t-xl overflow-hidden border border-orange-300">
-      <div className="grid grid-cols-4 gap-4 px-4 py-3 text-black font-semibold text-sm">
+    <div className="overflow-x-auto bg-white rounded-lg shadow border border-orange-200">
+      <div className="grid grid-cols-4 gap-4 px-4 py-3 
+  bg-[#FFD9B3] text-black font-semibold text-sm rounded-t-sm">
         <div className="flex items-center gap-2">
           <span>Trainers Name</span>
         </div>
@@ -438,7 +453,17 @@ const InstituteTrainersTable = ({ rows, onDelete }) => {
       </div>
 
       <div className="bg-white text-black">
-        {localRows.map((row) => {
+
+  {localRows.length === 0 ? (
+    /* 🔹 EMPTY MESSAGE */
+    <div className="grid grid-cols-4 px-4 py-6 border-t border-orange-200">
+      <div className="col-span-4 text-center text-gray-500 font-medium text-sm">
+        No trainers assigned
+      </div>
+    </div>
+  ) : (
+
+    localRows.map((row) => {
           const isEditing = editingId === row.trainerUid;
           const name = `${row.firstName || ""} ${row.lastName || ""}`.trim();
           return (
@@ -495,7 +520,8 @@ const InstituteTrainersTable = ({ rows, onDelete }) => {
               />
             </div>
           );
-        })}
+})
+      )}
       </div>
     </div>
   );

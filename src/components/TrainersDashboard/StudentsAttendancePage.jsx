@@ -201,8 +201,8 @@ const StudentsAttendancePage = () => {
       {message && <div className="mb-3 text-orange-600 font-semibold text-sm">{message}</div>}
 
       {/* Table */}
-      <div className="bg-[#FED7AA] rounded-t-xl border border-orange-300">
-        <div className="grid grid-cols-5 px-4 py-3 text-black font-semibold">
+     <div className="overflow-x-auto bg-white rounded-lg shadow">
+       <div className="grid grid-cols-5 px-4 py-3 bg-[#f9c199] text-black font-semibold">
           <div>Name</div>
           <div>Category</div>
           <div>Joined</div>
@@ -211,40 +211,62 @@ const StudentsAttendancePage = () => {
         </div>
 
         <div className="bg-white text-black">
-          {paginatedRows.map((s) => {
-            const todayStatus = attendanceData[s.id];
-            const editable = canEditAttendance(s.joinedDate);
-            const saving = savingStudentId === s.id;
-
-            return (
-              <div key={s.id} className="grid grid-cols-5 px-4 py-3 border-t items-center text-sm">
-                <div className="font-semibold">{s.firstName} {s.lastName}</div>
-                <div>{s.category || "-"}</div>
-                <div className="text-xs text-gray-500">{s.joinedDate}</div>
-
-                <div className="flex justify-center">
-                  <button
-                    disabled={!editable || saving}
-                    onClick={() => markAttendance(s.id, "present", s.joinedDate)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${todayStatus === "present" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"}`}
-                  >
-                    {saving ? "Saving..." : "Present"}
-                  </button>
-                </div>
-
-                <div className="flex justify-center">
-                  <button
-                    disabled={!editable || saving}
-                    onClick={() => markAttendance(s.id, "absent", s.joinedDate)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${todayStatus === "absent" ? "bg-red-500 text-white" : "bg-gray-200 text-gray-700"}`}
-                  >
-                    {saving ? "Saving..." : "Absent"}
-                  </button>
-                </div>
+          {filteredRows.length === 0 ? (
+            /* 🔹 NO STUDENTS ASSIGNED */
+            <div className="grid grid-cols-5 px-4 py-6 border-t border-orange-200">
+              <div className="col-span-5 text-center text-gray-500 font-medium text-sm">
+                No students assigned
               </div>
-            );
-          })}
+            </div>
+          ) : (
+            /* 🔹 STUDENT ROWS */
+            paginatedRows.map((s) => {
+              const todayStatus = attendanceData[s.id];
+              const editable = canEditAttendance(s.joinedDate);
+              const saving = savingStudentId === s.id;
+
+              return (
+                <div
+                  key={s.id}
+                className="grid grid-cols-5 px-4 py-3 border-b border-gray-200 items-center text-sm hover:bg-gray-100"
+                >
+                  <div className="font-semibold">
+                    {s.firstName} {s.lastName}
+                  </div>
+                  <div>{s.category || "-"}</div>
+                  <div className="text-xs text-gray-500">{s.joinedDate}</div>
+
+                  <div className="flex justify-center">
+                    <button
+                      disabled={!editable || saving}
+                      onClick={() => markAttendance(s.id, "present", s.joinedDate)}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${todayStatus === "present"
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                        }`}
+                    >
+                      {saving ? "Saving..." : "Present"}
+                    </button>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <button
+                      disabled={!editable || saving}
+                      onClick={() => markAttendance(s.id, "absent", s.joinedDate)}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${todayStatus === "absent"
+                          ? "bg-red-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                        }`}
+                    >
+                      {saving ? "Saving..." : "Absent"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
+
       </div>
 
       <Pagination

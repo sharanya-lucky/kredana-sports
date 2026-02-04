@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { db, auth } from "../../firebase";
-import { v4 as uuidv4 } from "uuid"; 
+import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
+
 import {
   doc,
   setDoc,
@@ -14,14 +15,11 @@ const AddStudentDetailsPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-
-  // ✅ Success Message State
-  const [successMessage, setSuccessMessage] = useState("");
-
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     category: "",
+    dateOfBirth: "",
     joinedDate: "",
     email: "",
     phoneNumber: "",
@@ -33,6 +31,7 @@ const AddStudentDetailsPage = () => {
     form.firstName.trim() &&
     form.lastName.trim() &&
     form.category.trim() &&
+    form.dateOfBirth.trim() &&
     form.joinedDate.trim() &&
     form.email.trim() &&
     form.phoneNumber.trim() &&
@@ -42,62 +41,63 @@ const AddStudentDetailsPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!isFormValid) {
-    alert("Please fill all required fields");
-    return;
-  }
+    if (!isFormValid) {
+      alert("Please fill all required fields");
+      return;
+    }
 
-  setSuccessMessage("");
-  const trainer = auth.currentUser;
-  if (!trainer) {
-    alert("Trainer not logged in");
-    return;
-  }
+    const trainer = auth.currentUser;
+    if (!trainer) {
+      alert("Trainer not logged in");
+      return;
+    }
 
-  try {
-    setLoading(true);
-    const studentUID = uuidv4();
+    try {
+      setLoading(true);
+      const studentUID = uuidv4();
 
-    await setDoc(doc(db, "trainerstudents", studentUID), {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      category: form.category,
-      joinedDate: form.joinedDate,
-      email: form.email,
-      phoneNumber: form.phoneNumber,
-      feeAmount: Number(form.feeAmount),
-      trainerUID: trainer.uid,
-      studentUID: studentUID,
-      role: "student",
-      createdAt: serverTimestamp(),
-    });
+      await setDoc(doc(db, "trainerstudents", studentUID), {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        category: form.category,
+        dateOfBirth: form.dateOfBirth,
+        joinedDate: form.joinedDate,
+        email: form.email,
+        phoneNumber: form.phoneNumber,
+        feeAmount: Number(form.feeAmount),
+        trainerUID: trainer.uid,
+        studentUID: studentUID,
+        role: "student",
+        createdAt: serverTimestamp(),
+      });
 
-    await updateDoc(doc(db, "trainers", trainer.uid), {
-      students: arrayUnion(studentUID),
-    });
+      await updateDoc(doc(db, "trainers", trainer.uid), {
+        students: arrayUnion(studentUID),
+      });
 
-    setSuccessMessage("Student added successfully 🎉");
-    setForm({
-      firstName: "",
-      lastName: "",
-      category: "",
-      joinedDate: "",
-      email: "",
-      phoneNumber: "",
-      feeAmount: "",
-    });
-
-    navigate("/trainers/dashboard"); // ✅ Navigate after success
-  } catch (error) {
-    console.error(error);
-    alert(error.message);
-  } finally {
-    setLoading(false);
-  }
-}; // <-- handleSubmit ends here
+      alert("Student added successfully 🎉");
+      setForm({
+        firstName: "",
+        lastName: "",
+        category: "",
+        dateOfBirth: "",
+        joinedDate: "",
+        email: "",
+        phoneNumber: "",
+        feeAmount: "",
+      });
+      setProfileImage(null);
+      navigate("/trainers/dashboard"); // ✅ Navigate after success
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }; // <-- handleSubmit ends here
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-6 text-gray-900">
@@ -106,18 +106,11 @@ const AddStudentDetailsPage = () => {
           Add Student Details
         </h1>
 
-        {/* ✅ Success Message Display */}
-        {successMessage && (
-          <div className="mb-6 p-4 rounded-lg bg-green-100 text-green-700 font-semibold">
-            {successMessage}
-          </div>
-        )}
-
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* First & Last Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="font-semibold">
+              <label className="font-semibold mb-2 block">
                 First Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -125,12 +118,15 @@ const AddStudentDetailsPage = () => {
                 placeholder="First Name"
                 value={form.firstName}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
-              />
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"></input>
             </div>
 
             <div>
-              <label className="font-semibold">
+              <label className="font-semibold mb-2 block">
                 Last Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -138,15 +134,32 @@ const AddStudentDetailsPage = () => {
                 placeholder="Last Name"
                 value={form.lastName}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
-              />
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"></input>
             </div>
+          </div>
+          <div>
+            <label className="font-semibold mb-2 block">
+              Upload Image <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setProfileImage(e.target.files[0])}
+              className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+outline-none"
+            />
           </div>
 
           {/* Category & Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="font-semibold">
+              <label className="font-semibold mb-2 block">
                 Category <span className="text-red-500">*</span>
               </label>
               <input
@@ -154,12 +167,15 @@ const AddStudentDetailsPage = () => {
                 placeholder="Category"
                 value={form.category}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
-              />
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"></input>
             </div>
 
             <div>
-              <label className="font-semibold">
+              <label className="font-semibold mb-2 block">
                 Joined Date <span className="text-red-500">*</span>
               </label>
               <input
@@ -167,7 +183,47 @@ const AddStudentDetailsPage = () => {
                 name="joinedDate"
                 value={form.joinedDate}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"></input>
+            </div>
+          </div>
+          {/* Date of Birth & Fee Amount */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="font-semibold mb-2 block">
+                Date of Birth <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                value={form.dateOfBirth}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold mb-2 block">
+                Fee Amount <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="feeAmount"
+                placeholder="Fee Amount"
+                value={form.feeAmount}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"
               />
             </div>
           </div>
@@ -175,7 +231,7 @@ const AddStudentDetailsPage = () => {
           {/* Email & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="font-semibold">
+              <label className="font-semibold mb-2 block">
                 E-mail <span className="text-red-500">*</span>
               </label>
               <input
@@ -184,12 +240,15 @@ const AddStudentDetailsPage = () => {
                 placeholder="E-mail"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
-              />
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"></input>
             </div>
 
             <div>
-              <label className="font-semibold">
+              <label className="font-semibold mb-2 block">
                 Phone Number <span className="text-red-500">*</span>
               </label>
               <input
@@ -197,25 +256,15 @@ const AddStudentDetailsPage = () => {
                 placeholder="Phone Number"
                 value={form.phoneNumber}
                 onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
-              />
+                className="w-full rounded-md border border-gray-300
+bg-white dark:bg-gray-700
+px-4 py-3 text-gray-900 dark:text-white
+focus:border-gray-700
+outline-none"></input>
+
             </div>
           </div>
 
-          {/* Fee Amount */}
-          <div>
-            <label className="font-semibold">
-              Fee Amount <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              name="feeAmount"
-              placeholder="Fee Amount"
-              value={form.feeAmount}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-400 outline-none"
-            />
-          </div>
 
           {/* Save Button */}
           <div className="flex justify-center pt-6">

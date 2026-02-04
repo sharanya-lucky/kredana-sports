@@ -99,7 +99,7 @@ export default function Plans() {
         {/* FREE */}
         <div className="bg-gray-900 text-white rounded-xl p-8 relative">
           <h2 className="text-xl font-bold mb-2">₹ 0/-</h2>
-          <p className="text-lime-400 font-semibold mb-4">FREE (1 Month)</p>
+          <p className="text-orange font-semibold mb-4">FREE (1 Month)</p>
 
           <ul className="space-y-2 text-sm">
             <li>✔ Trainer & Institutes</li>
@@ -110,7 +110,7 @@ export default function Plans() {
 
           <button
             onClick={startFreeTrial}
-            className="mt-6 w-full bg-lime-400 text-black py-2 rounded font-semibold"
+            className="mt-6 w-full bg-orange-400 text-black py-2 rounded font-semibold"
           >
             Subscribe
           </button>
@@ -118,14 +118,14 @@ export default function Plans() {
 
         {/* TRAINER */}
         <div className="bg-gray-900 text-white rounded-xl p-8 relative">
-          <span className="absolute top-3 right-3 bg-lime-400 text-black text-xs px-2 py-1 rounded">
+          <span className="absolute top-3 right-3 bg-orange-400 text-black text-xs px-2 py-1 rounded">
             20% OFF
           </span>
 
           <h2 className="text-xl font-bold mb-2">
             {billing === "monthly" ? "₹ 499/-" : "₹ 4,790 / Year"}
           </h2>
-          <p className="text-lime-400 font-semibold mb-4">Trainer’s Plan</p>
+          <p className="text-orange-400 font-semibold mb-4">Trainer’s Plan</p>
 
           <ul className="space-y-2 text-sm">
             <li>✔ Attendance Tracking</li>
@@ -144,14 +144,14 @@ export default function Plans() {
 
         {/* INSTITUTE */}
         <div className="bg-gray-900 text-white rounded-xl p-8 relative">
-          <span className="absolute top-3 right-3 bg-lime-400 text-black text-xs px-2 py-1 rounded">
+          <span className="absolute top-3 right-3 bg-orange-400 text-black text-xs px-2 py-1 rounded">
             20% OFF
           </span>
 
           <h2 className="text-xl font-bold mb-2">
             {billing === "monthly" ? "₹ 999/-" : "₹ 9,590 / Year"}
           </h2>
-          <p className="text-lime-400 font-semibold mb-4">Institutes Plan</p>
+          <p className="text-orange-400 font-semibold mb-4">Institutes Plan</p>
 
           <ul className="space-y-2 text-sm">
             <li>✔ Trainers Management Attendance</li>

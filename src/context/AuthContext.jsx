@@ -23,29 +23,46 @@ export const AuthProvider = ({ children }) => {
 
       setUser(firebaseUser);
 
-      try {
-        // 🔐 Fetch institute document using UID
-        const instituteRef = doc(db, "institutes", firebaseUser.uid);
-        const instituteSnap = await getDoc(instituteRef);
+            try {
+        // 1️⃣ Check TRAINER first
+        const trainerSnap = await getDoc(
+          doc(db, "trainers", firebaseUser.uid)
+        );
+
+        if (trainerSnap.exists()) {
+          setInstitute({
+            role: "trainer",
+            ...trainerSnap.data(),
+          });
+          setLoading(false);
+          return;
+        }
+
+        // 2️⃣ Else check INSTITUTE
+        const instituteSnap = await getDoc(
+          doc(db, "institutes", firebaseUser.uid)
+        );
 
         if (instituteSnap.exists()) {
           setInstitute({
-            id: instituteSnap.id,
+            role: "institute",
             ...instituteSnap.data(),
           });
         } else {
           setInstitute(null);
         }
       } catch (error) {
-        console.error("Failed to load institute data:", error);
+        console.error("Failed to load profile:", error);
         setInstitute(null);
       } finally {
         setLoading(false);
       }
     });
 
+    // ✅ VERY IMPORTANT
     return () => unsubscribe();
   }, []);
+
 
   return (
     <AuthContext.Provider value={{ user, institute, loading }}>

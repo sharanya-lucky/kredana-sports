@@ -102,7 +102,7 @@ export default function InstituteBookedDemos() {
           ].map((f) => (
             <select
               key={f.key}
-              className="p-3 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="p-3 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
               onChange={(e) =>
                 setFilters({ ...filters, [f.key]: e.target.value })
               }

@@ -7,6 +7,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import { db, secondaryAuth } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
@@ -19,8 +20,10 @@ const textareaClass =
 
 const DEFAULT_PASSWORD = "123456";
 
+
 const AddStudentDetailsPage = () => {
   const { user, institute } = useAuth();
+  const [profileImage, setProfileImage] = useState(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -28,6 +31,7 @@ const AddStudentDetailsPage = () => {
     fatherName: "",
     category: "",
     batchNumber: "",
+    dateOfBirth: "",
     joinedDate: "",
     email: "",
     phone: "",
@@ -60,9 +64,18 @@ const AddStudentDetailsPage = () => {
       );
 
       const studentUid = studentCredential.user.uid;
+      let profileImageUrl = "";
 
+      if (profileImage) {
+        const storage = getStorage();
+        const imageRef = ref(storage, `students/${studentUid}/profile.jpg`);
+        await uploadBytes(imageRef, profileImage);
+        profileImageUrl = await getDownloadURL(imageRef);
+      }
       await setDoc(doc(db, "students", studentUid), {
         ...formData,
+        dateOfBirth: formData.dateOfBirth,
+        profileImage: profileImageUrl,
         uid: studentUid,
         role: "student",
         instituteId: user.uid,
@@ -81,17 +94,21 @@ const AddStudentDetailsPage = () => {
         fatherName: "",
         category: "",
         batchNumber: "",
+        dateOfBirth: "",
         joinedDate: "",
         email: "",
         phone: "",
         studentFee: "",
         address: "",
       });
-    } catch (error) {
+      setProfileImage(null);
+    }
+    catch (error) {
       console.error("Student creation failed:", error);
       alert(error.message);
     }
   };
+
 
   return (
     <div className="min-h-screen w-full bg-gray-100 flex justify-center items-start overflow-auto py-10 px-4">
@@ -139,6 +156,17 @@ const AddStudentDetailsPage = () => {
               />
             </div>
           </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Profile Image <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              className="w-full text-sm"
+              onChange={(e) => setProfileImage(e.target.files[0])}
+            />
+          </div>
 
           {/* Father Name & Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -171,6 +199,7 @@ const AddStudentDetailsPage = () => {
             </div>
           </div>
 
+
           {/* Batch Number & Joined Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -202,21 +231,38 @@ const AddStudentDetailsPage = () => {
             </div>
           </div>
 
-          {/* Student Fee */}
-          <div>
-            <label className="block text-sm font-semibold mb-2">
-              Student Fee <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              className={inputClass}
-              placeholder="Enter Student Fee"
-              value={formData.studentFee}
-              onChange={(e) =>
-                setFormData({ ...formData, studentFee: e.target.value })
-              }
-            />
+          {/* Date of Birth & Student Fee */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Date of Birth <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                className={inputClass}
+                value={formData.dateOfBirth}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateOfBirth: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Student Fee <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                className={inputClass}
+                placeholder="Enter Student Fee"
+                value={formData.studentFee}
+                onChange={(e) =>
+                  setFormData({ ...formData, studentFee: e.target.value })
+                }
+              />
+            </div>
           </div>
+
 
           {/* Email & Phone */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -272,10 +318,9 @@ const AddStudentDetailsPage = () => {
               type="submit"
               disabled={!isFormValid}
               className={`w-full sm:w-auto px-16 py-3 rounded-xl text-lg font-extrabold transition-all duration-300
-                ${
-                  isFormValid
-                    ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
-                    : "bg-orange-200 text-white cursor-not-allowed"
+                ${isFormValid
+                  ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
+                  : "bg-orange-200 text-white cursor-not-allowed"
                 }`}
             >
               Save Student

@@ -64,8 +64,8 @@ await updateDoc(studentRef, {
     setDraft((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="bg-[#f9c199] rounded-t-xl overflow-hidden border border-orange-300">
-      <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-4 py-3 text-black font-semibold text-sm items-center">
+   <div className="overflow-x-auto bg-white rounded-lg shadow">
+      <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-4 py-3 bg-[#f9c199] text-black font-semibold text-sm items-center">
 
         <div className="flex items-center gap-2">
           
@@ -75,67 +75,76 @@ await updateDoc(studentRef, {
         <div>Phn.No</div>
         <div>Action</div>
       </div>
-
-      <div className="bg-white text-black">
-        {localRows.map((row) => {
-          const isEditing = editingId === row.id;
-          return (
-            <div
-              key={row.id}
-              className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-4 py-3 border-t border-orange-200 text-sm items-center"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full bg-[#d6e4ff] border border-[#97b2ff]" />
-                {isEditing ? (
-                  <input
-                    value={draft.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    className="border px-2 py-1 rounded text-xs w-full"
-                  />
-                ) : (
-                  <span>{row.name}</span>
-                )}
-              </div>
-
-              <div>
-                {isEditing ? (
-                  <input
-                    value={draft.batch}
-                    onChange={(e) => handleChange("batch", e.target.value)}
-                    className="border px-2 py-1 rounded text-xs w-full"
-                  />
-                ) : (
-                  row.batch
-                )}
-              </div>
-
-              <div>
-                {isEditing ? (
-                  <input
-                    value={draft.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    className="border px-2 py-1 rounded text-xs w-full"
-                  />
-                ) : (
-                  row.phone
-                )}
-              </div>
-
-              <div className="flex items-center justify-start gap-3 text-orange-500 text-lg">
-                <button title="Delete" onClick={() => onDelete(row.id)}>
-                  🗑️
-                </button>
-                <button
-                  title="Edit / Save"
-                  onClick={() => saveOrStartEdit(row)}
-                >
-                  {isEditing ? "✅" : "✏️"}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+<div className="bg-white text-black">
+  {localRows.length === 0 ? (
+    /* NO DATA FOUND STATE */
+    <div className="grid grid-cols-[2fr_1fr_1fr_1fr] px-4 py-6 border-t border-orange-200 text-sm">
+      <div className="col-span-4 text-center text-gray-500 font-medium">
+        No students assigned
       </div>
+    </div>
+  ) : (
+    /* DATA ROWS */
+    localRows.map((row) => {
+      const isEditing = editingId === row.id;
+      return (
+        <div
+          key={row.id}
+          className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-4 py-3 border-b border-gray-200 text-sm items-center hover:bg-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-4 rounded-full bg-[#d6e4ff] border border-[#97b2ff]" />
+            {isEditing ? (
+              <input
+                value={draft.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                className="border px-2 py-1 rounded text-xs w-full"
+              />
+            ) : (
+              <span>{row.name}</span>
+            )}
+          </div>
+
+          <div>
+            {isEditing ? (
+              <input
+                value={draft.batch}
+                onChange={(e) => handleChange("batch", e.target.value)}
+                className="border px-2 py-1 rounded text-xs w-full"
+              />
+            ) : (
+              row.batch
+            )}
+          </div>
+
+          <div>
+            {isEditing ? (
+              <input
+                value={draft.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+                className="border px-2 py-1 rounded text-xs w-full"
+              />
+            ) : (
+              row.phone
+            )}
+          </div>
+
+          <div className="flex items-center justify-start gap-3 text-orange-500 text-lg">
+            <button title="Delete" onClick={() => onDelete(row.id)}>
+              🗑️
+            </button>
+            <button
+              title="Edit / Save"
+              onClick={() => saveOrStartEdit(row)}
+            >
+              {isEditing ? "✅" : "✏️"}
+            </button>
+          </div>
+        </div>
+      );
+    })
+  )}
+</div>
+
     </div>
   );
 };

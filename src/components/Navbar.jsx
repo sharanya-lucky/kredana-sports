@@ -56,7 +56,7 @@ const Navbar = () => {
           setUserRole("user");
         }
       }
-     
+
       // 🔹 CHECK PLAN
       const planSnap = await getDoc(doc(db, "plans", currentUser.uid));
       if (
@@ -72,20 +72,20 @@ const Navbar = () => {
     fetchUserData();
   }, []);
 
-   /* ================= USER DROPDOWN CLICK OUTSIDE ================= */
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (
-      userDropdownRef.current &&
-      !userDropdownRef.current.contains(event.target)
-    ) {
-      setDropdownOpen(false);
-    }
-  };
+  /* ================= USER DROPDOWN CLICK OUTSIDE ================= */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
 
 
@@ -149,21 +149,21 @@ useEffect(() => {
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="flex items-center justify-between h-16">
           {/* LOGO */}
-         {/* LOGO */}
-<div
-  onClick={() => navigate("/")}
-  className="flex items-center gap-0 cursor-pointer"
->
-  <img
-    src="/Kridana logo.png"
-    alt="Kridana Logo"
-    className="w-16 h-16 object-contain"
-  />
+          {/* LOGO */}
+          <div
+            onClick={() => navigate("/")}
+            className="flex items-center gap-0 cursor-pointer"
+          >
+            <img
+              src="/Kridana logo.png"
+              alt="Kridana Logo"
+              className="w-16 h-16 object-contain"
+            />
 
-  <span className="text-2xl font-bold text-orange-600">
-    Kridana
-  </span>
-</div>
+            <span className="text-2xl font-bold text-orange-600">
+              Kridana
+            </span>
+          </div>
 
 
           {/* DESKTOP MENU */}
@@ -178,11 +178,10 @@ useEffect(() => {
                 onClick={() => setServiceOpen((prev) => !prev)}
                 className="font-medium text-gray-700 hover:text-orange-600 flex items-center gap-1"
               >
-               Categories
+                Categories
                 <svg
-                  className={`w-4 h-4 transition-transform ${
-                    serviceOpen ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 transition-transform ${serviceOpen ? "rotate-180" : ""
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -212,7 +211,7 @@ useEffect(() => {
               )}
             </div>
 
-            
+
 
             <NavLink to="/shop" className="hover:text-orange-600">
               Shop
@@ -220,13 +219,35 @@ useEffect(() => {
 
             {/* USER */}
             {auth.currentUser && (
-              <div className="relative"  ref={userDropdownRef}>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="p-2 rounded-full hover:bg-gray-100"
-                >
-                  <User className="w-6 h-6 text-gray-700 hover:text-orange-600" />
-                </button>
+              <div className="relative" ref={userDropdownRef}>
+                <div className="flex items-center gap-0">
+                  {/* Profile Icon (NO dropdown on click) */}
+                  <button className="p-2 rounded-full hover:bg-gray-100">
+                    <User className="w-6 h-6 text-gray-700 hover:text-orange-600" />
+                  </button>
+
+                  {/* Dropdown Arrow */}
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="p-1 -ml-1 rounded-full hover:bg-gray-100"
+                  >
+                    <svg
+                      className={`w-4 h-4 text-gray-700 transition-transform ${dropdownOpen ? "rotate-180" : ""
+                        }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border z-50">

@@ -215,8 +215,9 @@ const canEditDate = (joinDate) => {
       </div>
 
       {/* Table */}
-     <div className="bg-[#FED7AA] rounded-t-xl border border-orange-300">
-      <div className="grid grid-cols-4 gap-4 px-4 py-3 text-black font-semibold text-lg">
+    <div className="bg-[#FED7AA] rounded-xl border border-white shadow-sm">
+
+      <div className="grid grid-cols-4 gap-4 px-4 py-3 text-black font-semibold text-sm">
   <div className="text-left">Student Name</div>
   <div className="text-left">Category</div>
   <div className="text-center">Present</div>
@@ -224,61 +225,71 @@ const canEditDate = (joinDate) => {
 </div>
 
 
-        <div className="bg-white text-black">
-          {paginatedStudents.map((s) => {
-            const stat = summary[s.uid] || { present: 0, total: 0 };
-            const percentage =
-              stat.total === 0
-                ? 0
-                : Math.round((stat.present / stat.total) * 100);
+       <div className="bg-white text-black">
+  {paginatedStudents.length === 0 ? (
+    /* ✅ EMPTY STATE */
+    <div className="grid grid-cols-4 px-4 py-4 border-t text-center text-gray-500 font-medium">
+      <div className="col-span-4">
+        No students assigned
+      </div>
+    </div>
+  ) : (
+    paginatedStudents.map((s) => {
+      const stat = summary[s.uid] || { present: 0, total: 0 };
+      const percentage =
+        stat.total === 0
+          ? 0
+          : Math.round((stat.present / stat.total) * 100);
 
-            return (
-              <div
-                key={s.uid}
-                className="grid grid-cols-4 gap-4 px-4 py-3 border-t items-center text-sm"
-              >
-                <div className="font-semibold">
-                  {s.firstName} {s.lastName}
-                  <div className="text-xs text-gray-500">
-                    {stat.present}/{stat.total} • {percentage}%
-                  </div>
-                </div>
+      return (
+        <div
+          key={s.uid}
+          className="grid grid-cols-4 gap-4 px-4 py-3 border-t items-center text-sm"
+        >
+          <div className="font-semibold">
+            {s.firstName} {s.lastName}
+            <div className="text-xs text-gray-500">
+              {stat.present}/{stat.total} • {percentage}%
+            </div>
+          </div>
 
-                <div>{s.category || "-"}</div>
+          <div>{s.category || "-"}</div>
 
-                <div className="flex justify-center">
-  <button
-    disabled={!canEditDate(s.joinedDate)}
-    onClick={() => markAttendance(s, true)}
-    className={
-      "px-3 py-1 rounded-full text-xs font-semibold cursor-pointer w-fit " +
-      (attendance[s.uid] === true
-        ? "bg-green-500 text-white"
-        : "bg-gray-200 text-gray-700")
-    }
-  >
-    Present
-  </button>
-</div>
+          <div className="flex justify-center">
+            <button
+              disabled={!canEditDate(s.joinedDate)}
+              onClick={() => markAttendance(s, true)}
+              className={
+                "px-3 py-1 rounded-full text-xs font-semibold w-fit " +
+                (attendance[s.uid] === true
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-700")
+              }
+            >
+              Present
+            </button>
+          </div>
 
-<div className="flex justify-center">
-  <button
-    disabled={!canEditDate(s.joinedDate)}
-    onClick={() => markAttendance(s, false)}
-    className={
-      "px-3 py-1 rounded-full text-xs font-semibold cursor-pointer w-fit " +
-      (attendance[s.uid] === false
-        ? "bg-red-500 text-white"
-        : "bg-gray-200 text-gray-700")
-    }
-  >
-    Absent
-  </button>
-</div>
-              </div>
-            );
-          })}
+          <div className="flex justify-center">
+            <button
+              disabled={!canEditDate(s.joinedDate)}
+              onClick={() => markAttendance(s, false)}
+              className={
+                "px-3 py-1 rounded-full text-xs font-semibold w-fit " +
+                (attendance[s.uid] === false
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-200 text-gray-700")
+              }
+            >
+              Absent
+            </button>
+          </div>
         </div>
+      );
+    })
+  )}
+</div>
+
       </div>
 
       <Pagination

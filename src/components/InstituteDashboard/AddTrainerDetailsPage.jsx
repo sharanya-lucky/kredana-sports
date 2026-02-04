@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 import {
   setDoc,
   doc,
@@ -12,7 +14,8 @@ import { db, secondaryAuth } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 
 const inputClass =
-  "w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400";
+  "w-full border border-gray-300 rounded-md px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-0";
+
 
 const labelClass = "text-sm font-semibold";
 
@@ -21,18 +24,21 @@ const DEFAULT_PASSWORD = "123456";
 const AddTrainerDetailsPage = () => {
   const { user, institute } = useAuth();
 
+  // ✅ FIX 1: STATES MUST BE HERE (NOT INSIDE FUNCTIONS)
+  const [profileImage, setProfileImage] = useState(null);
+  const [certificateImages, setCertificateImages] = useState([]);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    category: "",
+    Designation: "",
+    dateOfBirth: "",
     joinedDate: "",
     email: "",
     phone: "",
     certificates: "",
     monthlySalary: "",
     lpa: "",
-
-    // ✅ New Optional Fields
     pfNumber: "",
     trainerId: "",
     bankName: "",
@@ -44,7 +50,7 @@ const AddTrainerDetailsPage = () => {
   const requiredFields = [
     "firstName",
     "lastName",
-    "category",
+    "Designation",
     "joinedDate",
     "email",
     "phone",
@@ -53,8 +59,20 @@ const AddTrainerDetailsPage = () => {
   ];
 
   const isFormValid = requiredFields.every(
-    (field) => formData[field]?.toString().trim() !== "",
+    (field) => formData[field]?.toString().trim() !== ""
   );
+
+  // ✅ FIX 2: HANDLER MUST BE OUTSIDE handleSubmit
+  const handleCertificateUpload = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (certificateImages.length + files.length > 3) {
+      alert("You can upload a maximum of 3 certificate images only.");
+      return;
+    }
+
+    setCertificateImages((prev) => [...prev, ...files]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,13 +91,37 @@ const AddTrainerDetailsPage = () => {
       const trainerCredential = await createUserWithEmailAndPassword(
         secondaryAuth,
         formData.email,
-        DEFAULT_PASSWORD,
+        DEFAULT_PASSWORD
       );
 
       const trainerUid = trainerCredential.user.uid;
+      const storage = getStorage();
+
+      // ✅ Upload profile image
+      let profileImageUrl = "";
+      if (profileImage) {
+        const imageRef = ref(storage, `trainers/${trainerUid}/profile.jpg`);
+        await uploadBytes(imageRef, profileImage);
+        profileImageUrl = await getDownloadURL(imageRef);
+      }
+
+      // ✅ Upload certificate images (max 3)
+      const certificateImageUrls = [];
+      for (let i = 0; i < certificateImages.length; i++) {
+        const certRef = ref(
+          storage,
+          `trainers/${trainerUid}/certificates/${i}.jpg`
+        );
+        await uploadBytes(certRef, certificateImages[i]);
+        const url = await getDownloadURL(certRef);
+        certificateImageUrls.push(url);
+      }
 
       await setDoc(doc(db, "InstituteTrainers", trainerUid), {
         ...formData,
+        dateOfBirth: formData.dateOfBirth,
+        profileImage: profileImageUrl,
+        certificateImages: certificateImageUrls,
         trainerUid,
         instituteId: user.uid,
         role: "trainer",
@@ -92,10 +134,12 @@ const AddTrainerDetailsPage = () => {
 
       alert("Trainer added & login created (password: 123456)");
 
+      // ✅ RESET STATES
       setFormData({
         firstName: "",
         lastName: "",
-        category: "",
+        Designation: "",
+        dateOfBirth: "",
         joinedDate: "",
         email: "",
         phone: "",
@@ -108,6 +152,8 @@ const AddTrainerDetailsPage = () => {
         ifscCode: "",
         accountNumber: "",
       });
+      setProfileImage(null);
+      setCertificateImages([]);
     } catch (error) {
       console.error("Trainer creation failed:", error);
       alert(error.message);
@@ -160,19 +206,33 @@ const AddTrainerDetailsPage = () => {
               />
             </div>
           </div>
+          {/* Profile Image */}
+          <div className="space-y-2">
+            <label className={labelClass}>
+              Profile Image <span className="text-red-500 ml-1">*</span>
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              className="w-full text-sm"
+              onChange={(e) => setProfileImage(e.target.files[0])}
+            />
+          </div>
+
+
 
           {/* Category & Joined Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className={labelClass}>
-                Category <span className="text-red-500 ml-1">*</span>
+                Designation <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 className={inputClass}
-                placeholder="Enter Category"
-                value={formData.category}
+                placeholder="Enter Designation"
+                value={formData.Designation}
                 onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
+                  setFormData({ ...formData, Designation: e.target.value })
                 }
               />
             </div>
@@ -224,6 +284,36 @@ const AddTrainerDetailsPage = () => {
             </div>
           </div>
 
+          {/* Date of Birth & Account Number */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Date of Birth */}
+            <div className="space-y-2">
+              <label className={labelClass}>
+                Date of Birth <span className="text-red-500 ml-1">*</span>
+              </label>
+              <input
+                type="date"
+                className={inputClass}
+                value={formData.dateOfBirth}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateOfBirth: e.target.value })
+                }
+              />
+            </div>
+
+            {/* Account Number */}
+            <div className="space-y-2">
+              <label className={labelClass}>Account Number (Optional)</label>
+              <input
+                className={inputClass}
+                placeholder="Enter Account Number"
+                value={formData.accountNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, accountNumber: e.target.value })
+                }
+              />
+            </div>
+          </div>
           {/* Salary */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -258,7 +348,7 @@ const AddTrainerDetailsPage = () => {
           {/* Trainer ID & PF */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className={labelClass}>Trainer ID</label>
+              <label className={labelClass}>Trainer ID (Optional)</label>
               <input
                 className={inputClass}
                 placeholder="Enter Trainer ID"
@@ -270,7 +360,7 @@ const AddTrainerDetailsPage = () => {
             </div>
 
             <div className="space-y-2">
-              <label className={labelClass}>PF Number</label>
+              <label className={labelClass}>PF Number (Optional)</label>
               <input
                 className={inputClass}
                 placeholder="Enter PF Number"
@@ -285,7 +375,7 @@ const AddTrainerDetailsPage = () => {
           {/* Bank */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className={labelClass}>Bank Name</label>
+              <label className={labelClass}>Bank Name (Optional)</label>
               <input
                 className={inputClass}
                 placeholder="Enter Bank Name"
@@ -297,7 +387,7 @@ const AddTrainerDetailsPage = () => {
             </div>
 
             <div className="space-y-2">
-              <label className={labelClass}>IFSC Code</label>
+              <label className={labelClass}>IFSC Code (Optional)</label>
               <input
                 className={inputClass}
                 placeholder="Enter IFSC Code"
@@ -309,33 +399,38 @@ const AddTrainerDetailsPage = () => {
             </div>
           </div>
 
-          {/* Account Number */}
-          <div className="space-y-2">
-            <label className={labelClass}>Account Number</label>
-            <input
-              className={inputClass}
-              placeholder="Enter Account Number"
-              value={formData.accountNumber}
-              onChange={(e) =>
-                setFormData({ ...formData, accountNumber: e.target.value })
-              }
-            />
-          </div>
 
           {/* Certificates */}
           <div className="space-y-2">
             <label className={labelClass}>
               Certificates <span className="text-red-500 ml-1">*</span>
             </label>
+
+            {/* Certificate name / description */}
             <input
               className={inputClass}
-              placeholder="Enter Certificates"
+              placeholder="Enter Certificate Details"
               value={formData.certificates}
               onChange={(e) =>
                 setFormData({ ...formData, certificates: e.target.value })
               }
             />
+
+            {/* Certificate image upload */}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="w-full text-sm"
+              onChange={handleCertificateUpload}
+            />
+
+            {/* Image count info */}
+            <p className="text-xs text-gray-500">
+              {certificateImages.length}/3 images selected
+            </p>
           </div>
+
 
           {/* Submit */}
           <div className="pt-6 flex justify-center">
@@ -343,10 +438,9 @@ const AddTrainerDetailsPage = () => {
               type="submit"
               disabled={!isFormValid}
               className={`w-full sm:w-auto px-16 py-3 rounded-xl text-lg font-extrabold transition-all duration-300
-                ${
-                  isFormValid
-                    ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
-                    : "bg-orange-200 text-white cursor-not-allowed"
+                ${isFormValid
+                  ? "bg-orange-500 text-white hover:bg-orange-600 cursor-pointer shadow-md"
+                  : "bg-orange-200 text-white cursor-not-allowed"
                 }`}
             >
               Save Trainer
